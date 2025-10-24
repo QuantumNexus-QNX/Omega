@@ -1,0 +1,273 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+      - 'claude/**'
+  pull_request:
+    branches:
+      - main
+      - develop
+
+env:
+  NODE_VERSION: '20'
+
+jobs:
+  # Job 1: Lint and Type Check
+  lint-and-typecheck:
+    name: Lint and Type Check
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: trivector-ai/package-lock.json
+
+      - name: Install dependencies
+        working-directory: ./trivector-ai
+        run: npm ci
+
+      - name: Run ESLint
+        working-directory: ./trivector-ai
+        run: npm run lint
+
+      - name: Run TypeScript type check
+        working-directory: ./trivector-ai
+        run: npx tsc --noEmit
+
+  # Job 2: Run Tests
+  test:
+    name: Run Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: trivector-ai/package-lock.json
+
+      - name: Install dependencies
+        working-directory: ./trivector-ai
+        run: npm ci
+
+      - name: Run tests
+        working-directory: ./trivector-ai
+        run: npm test
+        env:
+          NODE_ENV: test
+
+      - name: Upload coverage reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: trivector-ai/coverage/
+          retention-days: 7
+
+  # Job 3: Build Application
+  build:
+    name: Build Application
+    runs-on: ubuntu-latest
+    needs: [lint-and-typecheck, test]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: trivector-ai/package-lock.json
+
+      - name: Install dependencies
+        working-directory: ./trivector-ai
+        run: npm ci
+
+      - name: Create env file for build
+        working-directory: ./trivector-ai
+        run: |
+          echo "NEXT_PUBLIC_APP_URL=https://trivector.ai" >> .env.production
+          echo "NEXT_PUBLIC_API_URL=https://trivector.ai/api" >> .env.production
+          echo "NODE_ENV=production" >> .env.production
+
+      - name: Build application
+        working-directory: ./trivector-ai
+        run: npm run build
+        env:
+          NODE_ENV: production
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-output
+          path: trivector-ai/.next/
+          retention-days: 7
+
+  # Job 4: Security Audit
+  security-audit:
+    name: Security Audit
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: trivector-ai/package-lock.json
+
+      - name: Run npm audit
+        working-directory: ./trivector-ai
+        run: npm audit --audit-level=moderate
+        continue-on-error: true
+
+      - name: Check for known vulnerabilities
+        working-directory: ./trivector-ai
+        run: npx audit-ci --moderate
+        continue-on-error: true
+
+  # Job 5: Deploy to Vercel (Production)
+  deploy-production:
+    name: Deploy to Vercel (Production)
+    runs-on: ubuntu-latest
+    needs: [build]
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    environment:
+      name: production
+      url: https://trivector.ai
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Deploy to Vercel
+        uses: amondnet/vercel-action@v25
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
+          vercel-args: '--prod'
+          working-directory: ./trivector-ai
+
+      - name: Comment on commit
+        if: success()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            github.rest.repos.createCommitComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              commit_sha: context.sha,
+              body: '✅ Successfully deployed to production: https://trivector.ai'
+            })
+
+  # Job 6: Deploy to Vercel (Preview)
+  deploy-preview:
+    name: Deploy to Vercel (Preview)
+    runs-on: ubuntu-latest
+    needs: [build]
+    if: github.event_name == 'pull_request' || (github.ref != 'refs/heads/main' && github.event_name == 'push')
+    environment:
+      name: preview
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Deploy to Vercel (Preview)
+        uses: amondnet/vercel-action@v25
+        id: vercel-deploy
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
+          working-directory: ./trivector-ai
+
+      - name: Comment PR with preview URL
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `🚀 Preview deployment ready!\n\n**Preview URL:** ${{ steps.vercel-deploy.outputs.preview-url }}\n\nThe changes from this PR have been deployed to a preview environment.`
+            })
+
+  # Job 7: Docker Build Test
+  docker-build:
+    name: Docker Build Test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build Docker image
+        working-directory: ./trivector-ai
+        run: |
+          docker build -t trivector-ai:test .
+
+      - name: Test Docker image
+        run: |
+          docker run -d -p 3000:3000 --name trivector-test trivector-ai:test
+          sleep 10
+          curl --fail http://localhost:3000 || exit 1
+          docker stop trivector-test
+          docker rm trivector-test
+
+  # Job 8: Notify on Failure
+  notify-failure:
+    name: Notify on Failure
+    runs-on: ubuntu-latest
+    needs: [lint-and-typecheck, test, build, security-audit]
+    if: failure()
+
+    steps:
+      - name: Create issue on failure
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const title = `CI/CD Pipeline Failed - ${context.workflow} #${context.runNumber}`;
+            const body = `
+            The CI/CD pipeline has failed for commit ${context.sha}.
+
+            **Workflow:** ${context.workflow}
+            **Run:** ${context.runNumber}
+            **Branch:** ${context.ref}
+            **Triggered by:** ${context.actor}
+
+            [View workflow run](${context.payload.repository.html_url}/actions/runs/${context.runId})
+
+            Please investigate and fix the failing checks.
+            `;
+
+            github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: title,
+              body: body,
+              labels: ['ci-failure', 'bug']
+            });
