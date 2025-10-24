@@ -272,16 +272,25 @@ export type ClientEnv = z.infer<typeof clientSchema>
 export type ServerEnv = z.infer<typeof serverSchema>
 
 /**
+ * Runtime mode helpers
+ * Use process.env directly—do NOT add NODE_ENV to the public env type.
+ */
+export const nodeEnv = (process.env.NODE_ENV ?? 'development') as
+  | 'development'
+  | 'test'
+  | 'production'
+
+/**
  * Helper to check if we're in production
  */
-export const isProd = env.NODE_ENV === 'production'
+export const isProd = nodeEnv === 'production'
 
 /**
  * Helper to check if we're in development
  */
-export const isDev = env.NODE_ENV === 'development'
+export const isDev = nodeEnv === 'development'
 
 /**
  * Helper to check if we're in test environment
  */
-export const isTest = env.NODE_ENV === 'test'
+export const isTest = nodeEnv === 'test'
