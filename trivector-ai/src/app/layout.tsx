@@ -15,8 +15,41 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Trivector.AI",
-  description: "Advanced data visualization, 3D graphics, and machine learning",
+  title: 'Trivector.AI — Data Visualization & Machine Learning',
+  description:
+    'Building interactive data experiences with modern web technologies. Powered by React, Next.js, D3.js, Three.js, and advanced ML capabilities.',
+  keywords: [
+    'data visualization',
+    '3D graphics',
+    'machine learning',
+    'D3.js',
+    'Three.js',
+    'React',
+    'Next.js',
+    'interactive data',
+    'web visualization',
+  ],
+  authors: [{ name: 'Trivector.AI' }],
+  creator: 'Trivector.AI',
+  publisher: 'Trivector.AI',
+  metadataBase: new URL('https://trivector.ai'),
+  openGraph: {
+    title: 'Trivector.AI',
+    description: 'Data Visualization, 3D Graphics & Machine Learning',
+    url: 'https://trivector.ai',
+    siteName: 'Trivector.AI',
+    locale: 'en_US',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Trivector.AI',
+    description: 'Data Visualization, 3D Graphics & Machine Learning',
+  },
+  robots: {
+    index: true,
+    follow: true,
+  },
 };
 
 export default function RootLayout({
