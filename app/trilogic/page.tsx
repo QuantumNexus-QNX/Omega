@@ -14,6 +14,7 @@ import { MobiusParams } from './lib/math';
 import ControlPanel from './components/ControlPanel';
 import TruthTable from './components/TruthTable';
 import EducationalInfo from './components/EducationalInfo';
+import CodeExporter from './components/CodeExporter';
 
 // Dynamically import RiemannSphere to avoid SSR issues with Three.js
 const RiemannSphere = dynamic(() => import('./components/RiemannSphere'), {
@@ -72,6 +73,50 @@ export default function TriLogicPage() {
       
       {/* Main Content */}
       <main className="container mx-auto px-4 py-8">
+        {/* Framework Constants */}
+        <motion.section
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+          className="rounded-lg border border-purple-500/30 bg-black/20 backdrop-blur-sm p-8 mb-8"
+        >
+          <h3 className="text-xl font-semibold mb-6 text-center text-white">Mathematical Foundation</h3>
+          <div className="grid md:grid-cols-3 gap-6">
+            {/* Equilibrium Constant */}
+            <div className="text-center">
+              <div className="text-4xl font-bold mb-2 bg-gradient-to-r from-cyan-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
+                μ = 0.569
+              </div>
+              <div className="text-sm text-gray-400 mb-2">Equilibrium Constant</div>
+              <div className="text-xs text-gray-500">
+                Quadruple validation: Lambert W, Plastic ratio, Free energy, Emergent
+              </div>
+            </div>
+
+            {/* Resonance Frequency */}
+            <div className="text-center">
+              <div className="text-4xl font-bold mb-2 bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
+                Ω = 0.847 Hz
+              </div>
+              <div className="text-sm text-gray-400 mb-2">Resonance Frequency</div>
+              <div className="text-xs text-gray-500">
+                Neural oscillation from triple derivation
+              </div>
+            </div>
+
+            {/* Tri-Logic */}
+            <div className="text-center">
+              <div className="text-4xl font-bold mb-2 bg-gradient-to-r from-pink-400 to-cyan-400 bg-clip-text text-transparent">
+                {'{0, 1, ∅}'}
+              </div>
+              <div className="text-sm text-gray-400 mb-2">Tri-Logic Foundation</div>
+              <div className="text-xs text-gray-500">
+                Minimum for superposition. Binary is collapsed state.
+              </div>
+            </div>
+          </div>
+        </motion.section>
+
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Left Column - 3D Visualization */}
           <motion.div
@@ -126,6 +171,9 @@ export default function TriLogicPage() {
             <div className="rounded-lg border border-purple-500/30 bg-black/20 backdrop-blur-sm p-6">
               <EducationalInfo currentTransformation={transformation} />
             </div>
+            
+            {/* Code Exporter */}
+            <CodeExporter />
           </motion.div>
         </div>
         
