@@ -40,9 +40,9 @@ export const COLORS = {
   pink: '#ec4899',
   
   // Truth value colors
-  truthFalse: '#ef4444',    // Red for false
-  truthTrue: '#22c55e',     // Green for true
-  truthUndefined: '#f59e0b', // Amber for undefined
+  truthFalse: '#ef4444',    // Bright red for false
+  truthTrue: '#22c55e',     // Bright green for true
+  truthUndefined: '#f59e0b', // Bright amber for undefined
   
   // UI elements
   sphereGrid: '#1f1f1f',
