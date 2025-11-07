@@ -48,6 +48,28 @@ export default function Landing() {
               Quantum-native intelligence, engineered with wabi‑sabi minimalism and an astrophysics lens.
               The quasar at our core powers sovereign, deterministic AI you can trust.
             </p>
+            <div className="flex flex-wrap items-center justify-center gap-4 mt-6 text-sm">
+              <div className="flex items-center gap-2 px-4 py-2 rounded-lg bg-black/30 border border-cyan-500/30 backdrop-blur-sm">
+                <span className="text-gray-400">Equilibrium:</span>
+                <span className="font-mono font-semibold text-cyan-400">μ = 0.569</span>
+              </div>
+              <div className="flex items-center gap-2 px-4 py-2 rounded-lg bg-black/30 border border-purple-500/30 backdrop-blur-sm">
+                <span className="text-gray-400">Resonance:</span>
+                <span className="font-mono font-semibold text-purple-400">Ω = 0.847 Hz</span>
+              </div>
+              <div className="flex items-center gap-2 px-4 py-2 rounded-lg bg-black/30 border border-pink-500/30 backdrop-blur-sm">
+                <span className="text-gray-400">Tri-Logic:</span>
+                <span className="font-mono font-semibold text-pink-400">{"{ 0, 1, ∅ }"}</span>
+              </div>
+            </div>
+            <div className="mt-4">
+              <a 
+                href="/trilogic" 
+                className="text-sm text-cyan-400 hover:text-cyan-300 transition-colors underline decoration-cyan-400/30 hover:decoration-cyan-300"
+              >
+                → Explore interactive tri-logic visualizer
+              </a>
+            </div>
             <div className="flex flex-wrap items-center justify-center gap-3">
               <Link href="#cta" className="btn-primary">Get Started</Link>
               <Link href="#features" className="btn-ghost">Explore Features</Link>
@@ -63,7 +85,7 @@ export default function Landing() {
 
       {/* Features */}
       <section id="features" className="z-10 relative mx-auto max-w-7xl px-6 pb-20">
-        <div className="grid gap-6 md:grid-cols-3">
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
           <div className="cosmic-surface p-6">
             <h3 className="text-lg font-semibold mb-2">Quasar Core</h3>
             <p className="text-sm text-gray-400">Energy‑efficient inference with gradient‑driven orchestration and vector observability.</p>
@@ -75,6 +97,16 @@ export default function Landing() {
           <div className="cosmic-surface p-6">
             <h3 className="text-lg font-semibold mb-2">Post‑Quantum Shield</h3>
             <p className="text-sm text-gray-400">ML‑KEM secure channels and integrity proofs for every response.</p>
+          </div>
+          <div className="cosmic-surface p-6">
+            <h3 className="text-lg font-semibold mb-2">Tri-Logic Visualizer</h3>
+            <p className="text-sm text-gray-400 mb-4">
+              Interactive Riemann sphere with K3 logic, Möbius transformations, 
+              and production-ready code export. Superposition made tangible.
+            </p>
+            <a href="/trilogic" className="btn-primary inline-block">
+              Launch Visualizer →
+            </a>
           </div>
         </div>
         <div className="mt-8 text-center">

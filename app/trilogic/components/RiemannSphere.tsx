@@ -105,11 +105,11 @@ function TruthValueMarkers({ transformation }: { transformation?: MobiusParams |
       {markers.map((marker, idx) => (
         <group key={idx} position={marker.position}>
           <mesh>
-            <sphereGeometry args={[0.08, 16, 16]} />
+            <sphereGeometry args={[0.16, 16, 16]} />
             <meshStandardMaterial
               color={marker.color}
               emissive={marker.color}
-              emissiveIntensity={0.5}
+              emissiveIntensity={0.8}
             />
           </mesh>
           <Html distanceFactor={10}>
@@ -185,6 +185,10 @@ function RotatingSphere({ animating }: { animating: boolean }) {
         transparent
         opacity={0.15}
         wireframe={false}
+        metalness={0.3}
+        roughness={0.6}
+        emissive="#2d1b69"
+        emissiveIntensity={0.15}
       />
     </mesh>
   );
@@ -201,13 +205,15 @@ export default function RiemannSphere({
   return (
     <div className="w-full h-full">
       <Canvas
-        camera={{ position: [3, 2, 3], fov: 50 }}
+        camera={{ position: [0, 0, 2.5], fov: 55 }}
         gl={{ antialias: true, alpha: true }}
+        style={{ background: "radial-gradient(circle at center, #0a0a1f 0%, #000000 100%)" }}
       >
         {/* Lighting */}
-        <ambientLight intensity={0.5} />
-        <pointLight position={[10, 10, 10]} intensity={1} />
-        <pointLight position={[-10, -10, -10]} intensity={0.5} />
+        <ambientLight intensity={1.2} />
+        <pointLight position={[5, 5, 5]} intensity={0.8} color="#ffffff" />
+        <pointLight position={[-5, -5, -5]} intensity={0.4} color="#a78bfa" />
+        <directionalLight position={[0, 10, 0]} intensity={0.5} />
         
         {/* Sphere and grid */}
         <RotatingSphere animating={animating} />
