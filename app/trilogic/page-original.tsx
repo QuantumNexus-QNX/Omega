@@ -1,19 +1,13 @@
 'use client';
 
 /**
- * Enhanced Tri-Logic Visualizer Main Page
- * "The Sphere Awakens" - Making mathematics visceral
+ * Tri-Logic Visualizer Main Page
  * 
- * Features all enhancements:
- * - Multi-layered visible sphere
- * - Projection lines and complex plane
- * - Equilibrium spiral overlay
- * - Collapse animation
- * - Focus view controls
- * - Cross-ratio display
+ * Interactive demonstration of tri-logic system mapping to Riemann sphere
+ * with stereographic projection and Möbius transformations.
  */
 
-import React, { useState, Suspense, useCallback } from 'react';
+import React, { useState, Suspense } from 'react';
 import { motion } from 'framer-motion';
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
@@ -22,26 +16,22 @@ import ControlPanel from './components/ControlPanel';
 import TruthTable from './components/TruthTable';
 import EducationalInfo from './components/EducationalInfo';
 import CodeExporter from './components/CodeExporter';
-import CollapseAnimation from './components/CollapseAnimation';
-import SphereControls from './components/SphereControls';
 
-// Dynamically import RiemannSphereEnhanced to avoid SSR issues with Three.js
-const RiemannSphereEnhanced = dynamic(() => import('./components/RiemannSphereEnhanced'), {
+// Dynamically import RiemannSphere to avoid SSR issues with Three.js
+const RiemannSphere = dynamic(() => import('./components/RiemannSphere'), {
   ssr: false,
   loading: () => (
     <div className="w-full h-full flex items-center justify-center bg-black/20 rounded-lg">
-      <div className="text-purple-400 animate-pulse">Loading enhanced 3D visualization...</div>
+      <div className="text-purple-400 animate-pulse">Loading 3D visualization...</div>
     </div>
   )
 });
 
-export default function TriLogicPageEnhanced() {
+export default function TriLogicPage() {
   const [transformation, setTransformation] = useState<MobiusParams | null>(null);
   const [showProjectionLines, setShowProjectionLines] = useState(true);
-  const [showSpiral, setShowSpiral] = useState(false);
   const [animationSpeed, setAnimationSpeed] = useState(1);
   const [isAnimating, setIsAnimating] = useState(false);
-  const [crossRatio, setCrossRatio] = useState<number>(1.618); // Golden ratio as default
   
   const handleTransform = (params: MobiusParams) => {
     setIsAnimating(true);
@@ -58,28 +48,9 @@ export default function TriLogicPageEnhanced() {
     setIsAnimating(false);
   };
   
-  const handleToggleProjectionLines = useCallback(() => {
-    setShowProjectionLines(prev => !prev);
-  }, []);
-
-  const handleToggleSpiral = useCallback(() => {
-    setShowSpiral(prev => !prev);
-  }, []);
-
-  const handleToggleAnimation = useCallback(() => {
-    setIsAnimating(prev => !prev);
-  }, []);
-
-  const handleFocusView = useCallback(() => {
-    // This would trigger camera animation in the 3D component
-    // For now, just a placeholder
-    console.log('Focus view triggered');
-  }, []);
-
-  const handleCollapse = useCallback(() => {
-    // Trigger collapse animation in 3D sphere
-    console.log('Collapse animation triggered');
-  }, []);
+  const handleToggleProjectionLines = () => {
+    setShowProjectionLines(!showProjectionLines);
+  };
   
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#0a0a0a] via-[#0f0f1f] to-[#0a0a0a] text-white">
@@ -107,9 +78,6 @@ export default function TriLogicPageEnhanced() {
             <p className="text-gray-400 text-sm md:text-base">
               Interactive exploration of the minimal complete logic system {'{0, 1, ∅}'} on the Riemann sphere
             </p>
-            <div className="mt-2 inline-block px-3 py-1 bg-gradient-to-r from-purple-600/20 to-pink-600/20 rounded-full border border-purple-500/30">
-              <span className="text-xs text-purple-300">✨ Enhanced Edition - The Sphere Awakens</span>
-            </div>
           </motion.div>
         </div>
       </header>
@@ -173,23 +141,16 @@ export default function TriLogicPageEnhanced() {
               <div className="h-[500px] md:h-[600px]">
                 <Suspense fallback={
                   <div className="w-full h-full flex items-center justify-center bg-black/20">
-                    <div className="text-purple-400 animate-pulse">Loading enhanced 3D visualization...</div>
+                    <div className="text-purple-400 animate-pulse">Loading 3D visualization...</div>
                   </div>
                 }>
-                  <RiemannSphereEnhanced
+                  <RiemannSphere
                     transformation={transformation}
                     showProjectionLines={showProjectionLines}
-                    showSpiral={showSpiral}
                     animating={isAnimating}
-                    onFocusView={handleFocusView}
                   />
                 </Suspense>
               </div>
-            </div>
-
-            {/* Collapse Animation */}
-            <div className="rounded-lg border border-purple-500/30 bg-black/20 backdrop-blur-sm p-6">
-              <CollapseAnimation onCollapse={handleCollapse} />
             </div>
             
             {/* Truth Tables */}
@@ -205,22 +166,7 @@ export default function TriLogicPageEnhanced() {
             transition={{ duration: 0.6, delay: 0.4 }}
             className="space-y-6"
           >
-            {/* Sphere Controls */}
-            <div className="rounded-lg border border-purple-500/30 bg-black/20 backdrop-blur-sm p-6">
-              <h3 className="text-lg font-semibold text-white mb-4">Sphere Controls</h3>
-              <SphereControls
-                showProjectionLines={showProjectionLines}
-                showSpiral={showSpiral}
-                animating={isAnimating}
-                onToggleProjectionLines={handleToggleProjectionLines}
-                onToggleSpiral={handleToggleSpiral}
-                onToggleAnimation={handleToggleAnimation}
-                onFocusView={handleFocusView}
-                crossRatio={crossRatio}
-              />
-            </div>
-
-            {/* Control Panel (Möbius Transformations) */}
+            {/* Control Panel */}
             <div className="rounded-lg border border-purple-500/30 bg-black/20 backdrop-blur-sm p-6">
               <ControlPanel
                 onTransform={handleTransform}
@@ -252,30 +198,37 @@ export default function TriLogicPageEnhanced() {
           <h2 className="text-xl font-semibold mb-3 text-white">About This Visualization</h2>
           <div className="space-y-2 text-sm text-gray-300">
             <p>
-              This interactive tool demonstrates how tri-logic—the minimal complete logic system that allows superposition—maps naturally onto the Riemann sphere. 
-              Unlike binary logic which has only true and false, tri-logic includes a third value: undefined (∅).
+              This interactive tool demonstrates how tri-logic—the minimal complete logic system that allows 
+              superposition—maps naturally onto the <span className="font-semibold text-cyan-400">Riemann sphere</span>. 
+              Unlike binary logic which has only true and false, tri-logic includes a third value: 
+              <span className="font-semibold text-amber-400"> undefined (∅)</span>.
             </p>
             <p>
-              Through stereographic projection and Möbius transformations, we can visualize how undefined states can "rotate" between true and false, 
-              demonstrating the fluid nature of quantum-like superposition in logical systems.
+              Through <span className="font-semibold text-purple-400">stereographic projection</span> and 
+              <span className="font-semibold text-purple-400"> Möbius transformations</span>, we can visualize 
+              how undefined states can "rotate" between true and false, demonstrating the fluid nature of 
+              quantum-like superposition in logical systems.
             </p>
-            <div className="mt-4 p-4 bg-purple-500/10 rounded border border-purple-500/20">
-              <p className="font-semibold text-purple-300 mb-2">✨ Enhanced Features:</p>
-              <ul className="list-disc list-inside space-y-1 text-xs text-gray-400">
-                <li>Multi-layered sphere rendering with Fresnel glow effect</li>
-                <li>Stereographic projection lines from north pole to complex plane</li>
-                <li>Equilibrium spiral overlay showing μ and Ω dynamics</li>
-                <li>Quantum collapse animation (∅ → {'{0,1}'})</li>
-                <li>Cross-ratio display showing Möbius invariance</li>
-                <li>Interactive tooltips and focus controls</li>
-              </ul>
-            </div>
-          </div>
-          <div className="mt-4 text-xs text-gray-500 italic">
-            Based on the Integrated Consciousness Framework v2.1 (Addendum E: Tri-Logic and Quantum Semantics)
+            <p className="text-xs text-gray-500 mt-4">
+              Drag to rotate the sphere • Scroll to zoom • Click preset transformations to see the sphere morph
+            </p>
           </div>
         </motion.div>
       </main>
+      
+      {/* Footer */}
+      <footer className="border-t border-purple-500/20 backdrop-blur-sm bg-black/30 mt-12">
+        <div className="container mx-auto px-4 py-6 text-center text-sm text-gray-500">
+          <p>
+            Part of <span className="text-purple-400 font-semibold">trivector.ai</span> — 
+            Quantum-Native AI Platform
+          </p>
+          <p className="text-xs mt-2">
+            Based on Integrated Consciousness Framework v2.1 (Addendum E)
+          </p>
+        </div>
+      </footer>
     </div>
   );
 }
+
