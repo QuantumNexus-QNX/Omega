@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
 import { OrbitControls } from '@react-three/drei';
 import * as THREE from 'three';
@@ -31,7 +31,7 @@ function PredictionCloud({
   const pointsRef = useRef<THREE.Points>(null);
 
   // Generate particles
-  const particles = React.useMemo(() => {
+  const particles = useMemo(() => {
     const positions = [];
     const particleCount = 300;
     
