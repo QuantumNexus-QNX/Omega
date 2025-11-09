@@ -4,15 +4,24 @@ import React, { useState } from 'react';
 import { PRESET_MODELS, validateTransitionMatrix } from '../lib/spectral-triple';
 
 interface SpectralControlsProps {
-  onModelChange: (matrix: number[][], epsilon: number) => void;
+  onModelChange: (matrix: number[][], epsilon: number, presetKey?: string) => void;
   currentDimension: number;
+  selectedPreset?: string;
 }
 
 export const SpectralControls: React.FC<SpectralControlsProps> = ({
   onModelChange,
-  currentDimension
+  currentDimension,
+  selectedPreset: externalSelectedPreset
 }) => {
-  const [selectedPreset, setSelectedPreset] = useState('ADDENDUM_B');
+  const [selectedPreset, setSelectedPreset] = useState(externalSelectedPreset || 'ADDENDUM_B');
+  
+  // Update internal state when external prop changes
+  React.useEffect(() => {
+    if (externalSelectedPreset) {
+      setSelectedPreset(externalSelectedPreset);
+    }
+  }, [externalSelectedPreset]);
   const [epsilon, setEpsilon] = useState(1e-3);
   const [customMatrix, setCustomMatrix] = useState('');
   const [showCustom, setShowCustom] = useState(false);
@@ -24,7 +33,7 @@ export const SpectralControls: React.FC<SpectralControlsProps> = ({
     setValidationError(null);
     
     const preset = PRESET_MODELS[presetKey as keyof typeof PRESET_MODELS];
-    onModelChange(preset.matrix, preset.epsilon);
+    onModelChange(preset.matrix, preset.epsilon, presetKey);
   };
 
   const handleCustomSubmit = () => {

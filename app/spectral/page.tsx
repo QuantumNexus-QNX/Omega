@@ -15,14 +15,20 @@ export default function SpectralPage() {
   const [geodesicPair, setGeodesicPair] = useState<{ from: number; to: number } | null>(null);
   const [isComputing, setIsComputing] = useState(false);
   const [showMath, setShowMath] = useState(false);
+  const [selectedPreset, setSelectedPreset] = useState('ADDENDUM_B');
 
   // Compute spectral triple on mount and when model changes
   useEffect(() => {
     computeModel(transitionMatrix, PRESET_MODELS.ADDENDUM_B.epsilon);
   }, []);
 
-  const computeModel = async (matrix: number[][], epsilon: number) => {
+  const computeModel = async (matrix: number[][], epsilon: number, presetKey?: string) => {
     setIsComputing(true);
+    
+    // Update selected preset if provided
+    if (presetKey) {
+      setSelectedPreset(presetKey);
+    }
     
     // Simulate async computation (in production, this could be WASM)
     await new Promise(resolve => setTimeout(resolve, 100));
@@ -208,6 +214,7 @@ export default function SpectralPage() {
               <SpectralControls
                 onModelChange={computeModel}
                 currentDimension={result.metadata.dimension}
+                selectedPreset={selectedPreset}
               />
             </div>
 
