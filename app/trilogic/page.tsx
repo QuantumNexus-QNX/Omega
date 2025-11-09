@@ -21,6 +21,7 @@ import { ParameterProvider } from './context/ParameterContext';
 import { VisualizationProvider } from './context/VisualizationContext';
 import { DisclosureProvider } from './context/DisclosureContext';
 import { ThreeProvider } from './context/ThreeContext';
+import { CollaborationProvider, useCollaboration } from './context/CollaborationContext';
 
 // Enhancement Components
 import MasterControls from './components/MasterControls';
@@ -31,6 +32,9 @@ import OmegaPulse from './components/OmegaPulse';
 import PageTransitions, { TabTransition } from './components/PageTransitions';
 import LazyVisualization from './components/LazyVisualization';
 import { AudioControls } from '../components/AudioControls';
+import { SessionManager } from '../components/SessionManager';
+import { UserPresence } from '../components/UserPresence';
+import { ConflictResolution } from '../components/ConflictResolution';
 
 // Existing Components
 import ControlPanel from './components/ControlPanel';
@@ -63,6 +67,9 @@ function TriLogicContent() {
   const [showSpiral, setShowSpiral] = useState(false);
   const [animationSpeed, setAnimationSpeed] = useState(1);
   const [isAnimating, setIsAnimating] = useState(false);
+  
+  // Collaboration hooks
+  const collaboration = useCollaboration();
 
   const handleTransformationChange = useCallback((params: MobiusParams | null) => {
     setTransformation(params);
@@ -124,6 +131,19 @@ function TriLogicContent() {
                 </div>
                 <AudioControls />
                 <DisclosureControls />
+              </div>
+              
+              {/* Collaboration Controls */}
+              <div className="mt-4 flex items-center justify-between gap-4 flex-wrap">
+                <SessionManager
+                  sessionId={collaboration.sessionId}
+                  onCreateSession={collaboration.createSession}
+                  onJoinSession={collaboration.joinSession}
+                  onLeaveSession={collaboration.leaveSession}
+                />
+                {collaboration.connected && (
+                  <UserPresence users={collaboration.users} />
+                )}
               </div>
             </PageTransitions>
           </div>
@@ -259,6 +279,13 @@ function TriLogicContent() {
             <p className="mt-2">Making consciousness mathematics visceral</p>
           </div>
         </footer>
+        
+        {/* Conflict Resolution Modal */}
+        <ConflictResolution
+          conflict={collaboration.currentConflict}
+          onResolve={collaboration.resolveConflict}
+          onDismiss={collaboration.dismissConflict}
+        />
       </div>
     </>
   );
@@ -267,13 +294,15 @@ function TriLogicContent() {
 export default function TriLogicPageEnhanced() {
   return (
     <ParameterProvider>
-      <VisualizationProvider>
-        <DisclosureProvider>
-          <ThreeProvider>
-            <TriLogicContent />
-          </ThreeProvider>
-        </DisclosureProvider>
-      </VisualizationProvider>
+      <CollaborationProvider>
+        <VisualizationProvider>
+          <DisclosureProvider>
+            <ThreeProvider>
+              <TriLogicContent />
+            </ThreeProvider>
+          </DisclosureProvider>
+        </VisualizationProvider>
+      </CollaborationProvider>
     </ParameterProvider>
   );
 }
