@@ -19,7 +19,7 @@ export interface SpectralTripleResult {
 let wasmModule: any = null;
 let wasmLoading: Promise<any> | null = null;
 
-async function loadWasmModule() {
+async function initWasm() {
   if (wasmModule) return wasmModule;
   if (wasmLoading) return wasmLoading;
   
@@ -27,32 +27,36 @@ async function loadWasmModule() {
     return null;
   }
 
-  wasmLoading = (async () => {
+  const GLUE = '/wasm/connes_distance_wasm.js';
+
+  async function loadGlue() {
     try {
-      // Use fetch + WebAssembly.instantiate for better control
-      const wasmPath = '/wasm/connes_distance_wasm_bg.wasm';
-      const jsPath = '/wasm/connes_distance_wasm.js';
+      // Sanity-check that we aren't about to import an HTML error page
+      const res = await fetch(GLUE, { method: 'HEAD' });
+      if (!res.ok) {
+        throw new Error(`Failed to load ${GLUE} (HTTP ${res.status}). WASM files may not be deployed correctly.`);
+      }
+      const ct = res.headers.get('content-type') || '';
+      if (ct.includes('text/html')) {
+        throw new Error(`Expected JS at ${GLUE} but got HTML (likely missing in deployment). Please check if public/wasm/ files are deployed.`);
+      }
       
-      // Dynamically create script tag to load the JS wrapper
-      const response = await fetch(jsPath);
-      const jsCode = await response.text();
-      
-      // Create a blob URL and import it
-      const blob = new Blob([jsCode], { type: 'application/javascript' });
-      const url = URL.createObjectURL(blob);
-      
-      const module = await import(/* webpackIgnore: true */ url);
-      await module.default(wasmPath);
-      
-      wasmModule = module;
-      return module;
-    } catch (e) {
-      console.error('Failed to load WASM:', e);
+      // Avoid bundler transforms; load from /public at runtime
+      // @ts-ignore
+      const mod = await import(/* webpackIgnore: true */ GLUE);
+      if (typeof mod?.default === 'function') {
+        await mod.default();
+      }
+      wasmModule = mod;
+      return mod;
+    } catch (e: any) {
+      console.error('WASM loading failed:', e);
       wasmLoading = null;
-      throw e;
+      throw new Error(`WASM module loading failed: ${e.message}. This likely means the WASM files in public/wasm/ are not being served correctly by the deployment.`);
     }
-  })();
-  
+  }
+
+  wasmLoading = loadGlue();
   return wasmLoading;
 }
 
@@ -66,7 +70,7 @@ export function useSpectralTriple(P: number[][], epsilon = 0.001) {
     (async () => {
       setLoading(true); setError(null);
       try {
-        const wasm = await loadWasmModule();
+        const wasm = await initWasm();
         if (!wasm || cancelled) return;
         
         const n = P.length;
@@ -87,7 +91,7 @@ export function useSpectralTriple(P: number[][], epsilon = 0.001) {
 }
 
 export async function getWasmModule(): Promise<any> {
-  return loadWasmModule();
+  return initWasm();
 }
 
 export function unpackSquare(flat: number[], n: number) {
