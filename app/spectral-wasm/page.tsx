@@ -172,9 +172,9 @@ export default function SpectralWASMPage() {
 
                 {/* Ill-conditioning indicator */}
                 {result.conditioning.ill_conditioned && (
-                  <div className="rounded-2xl p-4 border border-amber-700 bg-amber-900/20">
-                    <div className="font-semibold">⚠️ Ill-conditioned</div>
-                    <div className="text-sm opacity-80">
+                  <div className="rounded-lg p-3 border border-amber-700/50 bg-amber-900/10 text-sm">
+                    <div className="font-semibold text-amber-400">⚠️ Ill-conditioned</div>
+                    <div className="text-xs opacity-70 mt-1">
                       Tiny spectral gap or nonzero λ₀; results may be numerically fragile.
                     </div>
                   </div>

@@ -106,8 +106,8 @@ function TriLogicContent() {
 
       <div className="min-h-screen relative">
         {/* Header */}
-        <header className="border-b border-purple-500/20 backdrop-blur-sm bg-black/30 sticky top-0 z-40">
-          <div className="container mx-auto px-4 py-6">
+        <header className="border-b border-purple-500/20 backdrop-blur-sm bg-black/40 sticky top-0 z-40 shadow-lg">
+          <div className="container mx-auto px-4 py-3">
             <div className="flex items-center justify-between mb-4">
               <Link href="/" className="text-sm text-gray-400 hover:text-cyan-400 transition-colors flex items-center gap-2">
                 <span>←</span>
@@ -119,13 +119,13 @@ function TriLogicContent() {
               </div>
             </div>
             <PageTransitions>
-              <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-purple-400 via-cyan-400 to-blue-400 bg-clip-text text-transparent mb-2">
+              <h1 className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-purple-400 via-cyan-400 to-blue-400 bg-clip-text text-transparent mb-1">
                 Tri-Logic Visualizer
               </h1>
               <p className="text-gray-400 text-sm md:text-base">
                 Interactive exploration of the minimal complete logic system {'{0, 1, ∅}'} on the Riemann sphere
               </p>
-              <div className="mt-4 flex items-center gap-4 flex-wrap">
+              <div className="mt-2 flex items-center gap-2 flex-wrap">
                 <div className="inline-block px-3 py-1 bg-gradient-to-r from-purple-600/20 to-pink-600/20 rounded-full border border-purple-500/30">
                   <span className="text-xs text-purple-300">✨ Enhanced Interactive Edition</span>
                 </div>
@@ -134,7 +134,7 @@ function TriLogicContent() {
               </div>
               
               {/* Collaboration Controls */}
-              <div className="mt-4 flex items-center justify-between gap-4 flex-wrap">
+              <div className="mt-2 flex items-center justify-between gap-2 flex-wrap">
                 <SessionManager
                   sessionId={collaboration.sessionId}
                   onCreateSession={collaboration.createSession}
