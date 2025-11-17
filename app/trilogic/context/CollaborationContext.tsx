@@ -25,12 +25,19 @@ const WS_URL = process.env.NEXT_PUBLIC_WS_URL || 'ws://localhost:8000';
 
 export function CollaborationProvider({ children }: { children: ReactNode }) {
   // Make searchParams optional to avoid Suspense boundary requirement
-  let searchParams = null;
-  try {
-    searchParams = useSearchParams();
-  } catch (e) {
-    // SSR or missing Suspense boundary - searchParams will be null
-  }
+  const [searchParams, setSearchParams] = useState<URLSearchParams | null>(null);
+  
+  // Only call useSearchParams on client side
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const params = new URLSearchParams(window.location.search);
+        setSearchParams(params);
+      } catch (e) {
+        // Ignore errors
+      }
+    }
+  }, []);
   const { params, setMu, setOmega, setKappa } = useParameters();
   const { user, token, loginAnonymous, isAuthenticated } = useAuth();
   

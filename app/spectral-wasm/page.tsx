@@ -1,5 +1,6 @@
 'use client';
 
+
 import { useState, useMemo } from 'react';
 import dynamic from 'next/dynamic';
 import { useSpectralTriple, unpackSquare } from '@/app/hooks/useSpectralTriple';

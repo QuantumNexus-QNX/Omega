@@ -1,5 +1,6 @@
 'use client';
 
+
 import React, { useState, useEffect } from 'react';
 import { SpectralVisualization } from './components/SpectralVisualization';
 import { SpectralControls } from './components/SpectralControls';

@@ -6,10 +6,10 @@ import { motion } from 'framer-motion';
 import { JO_CONSTANTS } from '../lib/constants';
 
 export default function ConsolePage() {
-  const [mu, setMu] = useState(JO_CONSTANTS.MU);
-  const [omega, setOmega] = useState(JO_CONSTANTS.OMEGA);
-  const [kappa, setKappa] = useState(JO_CONSTANTS.KAPPA);
-  const [beta, setBeta] = useState(JO_CONSTANTS.BETA);
+  const [mu, setMu] = useState<number>(JO_CONSTANTS.MU);
+  const [omega, setOmega] = useState<number>(JO_CONSTANTS.OMEGA);
+  const [kappa, setKappa] = useState<number>(JO_CONSTANTS.KAPPA);
+  const [beta, setBeta] = useState<number>(JO_CONSTANTS.BETA);
 
   const validation = useMemo(() => validateConstants(mu, omega, kappa, beta), [mu, omega, kappa, beta]);
 
