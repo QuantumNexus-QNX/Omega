@@ -81,6 +81,12 @@ export default function Landing() {
               >
                 → Explore spectral geometry (Rust/WASM + 3D)
               </a>
+              <a 
+                href="/consciousness" 
+                className="text-sm text-green-400 hover:text-green-300 transition-colors underline decoration-green-400/30 hover:decoration-green-300 font-semibold"
+              >
+                → Explore full consciousness modeling framework
+              </a>
             </div>
             <div className="flex flex-wrap items-center justify-center gap-3">
               <Link href="#cta" className="btn-primary">Get Started</Link>

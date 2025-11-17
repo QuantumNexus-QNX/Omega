@@ -42,7 +42,19 @@ Omega/
   - Interactive controls
   - Educational content
 
-### **3. TriVector AI** (`/trivector-ai`)
+### **3. Consciousness Modeling Framework** (`/app/consciousness`)
+- **Technology**: Next.js + Advanced Math Libraries
+- **Purpose**: Mathematical consciousness modeling with spectral geometry and tri-logic
+- **URL**: `trivector.ai/consciousness`
+- **Features**:
+  - JO framework constants (μ, Ω, κ, β)
+  - ENCHC higher category theory
+  - Spectral triple computations
+  - K3 tri-valued logic
+  - JO∞∞ tensor calculus
+  - Interactive parameter console
+
+### **4. TriVector AI** (`/trivector-ai`)
 - **Technology**: Next.js
 - **Purpose**: Additional AI project
 - **URL**: TBD
