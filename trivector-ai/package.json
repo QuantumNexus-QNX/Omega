@@ -17,7 +17,7 @@
     "react-dom": "18.3.1",
     "@react-three/drei": "^9.105.5",
     "@react-three/fiber": "^8.15.16",
-    "three": "^0.162.0",
+    "three": "^0.180.0",
     "zod": "^3.23.8",
     "tailwindcss": "^3.4.17",
     "postcss": "^8.4.49",
