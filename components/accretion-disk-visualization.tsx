@@ -209,13 +209,15 @@ export default function AccretionDiskVisualization() {
         return nx0 + (nx1 - nx0) * u.y;
       }
       
-      float fbm(vec2 p) {
+      float fbm(vec2 p, float timeOffset) {
         float f = 0.0;
         float amp = 0.55;
         float freq = 1.0;
         
+        // Add time-based animation to each octave
         for (int i = 0; i < 3; i++) {
-          f = f + amp * noise(p * freq);
+          vec2 animP = p * freq + vec2(timeOffset * (0.3 + float(i) * 0.15), timeOffset * (0.2 + float(i) * 0.1));
+          f = f + amp * noise(animP);
           freq = freq * 1.9;
           amp = amp * 0.5;
         }
@@ -252,41 +254,41 @@ export default function AccretionDiskVisualization() {
         
         float angle = atan(pos.z, pos.x);
         
-        // Much faster orbital rotation - inner orbits faster (Keplerian)
+        // Very fast orbital rotation - inner orbits much faster (Keplerian)
         float orbSpeed = 1.0 / (r * sqrt(r));
-        float phase = angle - u_time * orbSpeed * 8.0;
+        float phase = angle - u_time * orbSpeed * 25.0;
         
         // Normalized radius for gradients
         float rNorm = (r - DISK_INNER) / (DISK_OUTER - DISK_INNER);
         
-        // Dynamic turbulence UV - flows with rotation
+        // Dynamic turbulence UV - flows rapidly with rotation
         vec2 diskUV = vec2(
-          phase * 1.2 + u_time * 0.5,
-          log(r + 0.5) * 2.5 - u_time * 0.2
+          phase * 1.5 + u_time * 1.2,
+          log(r + 0.5) * 3.0 - u_time * 0.6
         );
         
-        // Animated turbulence
-        float turb = fbm(diskUV) * 0.8;
-        float turb2 = fbm(diskUV * 0.5 + vec2(u_time * 0.3, 0.0)) * 0.4;
+        // Animated turbulence - time flows through the noise itself
+        float turb = fbm(diskUV, u_time * 0.8) * 0.9;
+        float turb2 = fbm(diskUV * 0.6, u_time * 1.2) * 0.5;
         turb = turb + turb2;
         
-        // Prominent spiral arms that rotate with the disk
-        float spiralPhase = phase * 2.0 + r * 2.2;
+        // Prominent spiral arms that rotate rapidly with the disk
+        float spiralPhase = phase * 2.5 + r * 2.8;
         float spiralArm = sin(spiralPhase);
         spiralArm = spiralArm * 0.5 + 0.5;
-        spiralArm = pow(spiralArm, 1.5) * 0.5;
+        spiralArm = pow(spiralArm, 1.2) * 0.6;
         
-        // Secondary spiral structure
-        float spiral2 = sin(phase * 4.0 - r * 1.5 + u_time * 0.3);
-        spiral2 = max(0.0, spiral2) * 0.25;
+        // Secondary spiral structure - faster
+        float spiral2 = sin(phase * 5.0 - r * 2.0 + u_time * 1.5);
+        spiral2 = max(0.0, spiral2) * 0.35;
         
-        // Bright clumps and hotspots that orbit
-        float clumpPhase = angle - u_time * 1.2 / sqrt(r);
-        float hotspot = sin(clumpPhase * 6.0 + r * 3.0) * 0.5 + 0.5;
-        hotspot = pow(hotspot, 6.0) * 0.4;
+        // Bright clumps and hotspots that orbit rapidly
+        float clumpPhase = angle - u_time * 3.5 / sqrt(r);
+        float hotspot = sin(clumpPhase * 8.0 + r * 4.0) * 0.5 + 0.5;
+        hotspot = pow(hotspot, 5.0) * 0.5;
         
-        // Flickering brightness variation
-        float flicker = sin(u_time * 3.0 + r * 5.0) * 0.1 + 1.0;
+        // Strong flickering brightness variation
+        float flicker = sin(u_time * 6.0 + r * 8.0) * 0.15 + 1.0;
         
         // Radial brightness profile - hotter inner edge
         float brightness = pow(DISK_INNER / r, 1.8);
@@ -355,7 +357,7 @@ export default function AccretionDiskVisualization() {
         vec2 uv = (gl_FragCoord.xy - 0.5 * u_resolution) / min(u_resolution.x, u_resolution.y);
         
         float camDist = 11.0;
-        float orbitAngle = u_time * 0.15;
+        float orbitAngle = u_time * 0.25;
         
         float cI = cos(INCLINATION);
         float sI = sin(INCLINATION);
@@ -479,8 +481,8 @@ export default function AccretionDiskVisualization() {
           }
           
           float prDist = abs(r - RS * 1.5);
-          float prPulse = 0.8 + 0.2 * sin(u_time * 2.5 + atan(posZ, posX) * 3.0);
-          float prGlow = exp(-prDist * prDist * 120.0) * 0.2 * prPulse * (1.0 - alpha);
+          float prPulse = 0.7 + 0.3 * sin(u_time * 4.0 + atan(posZ, posX) * 4.0);
+          float prGlow = exp(-prDist * prDist * 100.0) * 0.25 * prPulse * (1.0 - alpha);
           color = color + vec3(1.0, 0.9, 0.7) * prGlow;
           
           prevY = newPosY;

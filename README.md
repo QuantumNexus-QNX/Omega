@@ -8,14 +8,14 @@
 
 This monorepo contains multiple projects for the TriVector.ai ecosystem:
 
-```
+\`\`\`
 Omega/
 ├── landing/              # Quasar landing page (Main site)
 ├── app/                  # Next.js Riemann sphere visualizer
 ├── components/           # Shared React components
 ├── trivector-ai/         # Additional Next.js project
 └── vercel.json           # Multi-project deployment config
-```
+\`\`\`
 
 ---
 
@@ -116,4 +116,3 @@ This repository is configured for Vercel's monorepo support.
 ---
 
 **Built with Quasar, Next.js, and Three.js | Production-Ready | Vercel Optimized**
-
