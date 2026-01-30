@@ -298,20 +298,22 @@ export default function AccretionDiskVisualization() {
         // Apply relativistic color shift
         // Blueshift: approaching material appears hotter (shift toward blue/white)
         // Redshift: receding material appears cooler (shift toward red/orange)
-        float colorShift = clamp(dopplerFactor * 1.5, -1.0, 1.0);
+        float colorShift = clamp(dopplerFactor * 2.0, -1.0, 1.0);
         
-        // Blueshift - boost blue and green, reduce red slightly
+        // Blueshift - strong shift toward blue/cyan/white for approaching material
         if (colorShift > 0.0) {
-          col.b = col.b + col.b * colorShift * 0.8;
-          col.g = col.g + col.g * colorShift * 0.4;
-          col = col * (1.0 + colorShift * 0.3);
+          float blueBoost = colorShift * colorShift; // Quadratic for stronger effect
+          col.b = col.b + col.b * blueBoost * 2.0 + colorShift * 0.4;
+          col.g = col.g + col.g * colorShift * 1.2;
+          col.r = col.r * (1.0 - colorShift * 0.15); // Slightly reduce red
+          col = col * (1.0 + colorShift * 0.5); // Brighter overall
         }
         // Redshift - boost red, reduce blue significantly
         else {
           float redShift = -colorShift;
-          col.r = col.r + col.r * redShift * 0.5;
-          col.g = col.g * (1.0 - redShift * 0.3);
-          col.b = col.b * (1.0 - redShift * 0.6);
+          col.r = col.r + col.r * redShift * 0.6;
+          col.g = col.g * (1.0 - redShift * 0.35);
+          col.b = col.b * (1.0 - redShift * 0.7);
         }
         
         // Gravitational redshift - light loses energy escaping the gravity well
