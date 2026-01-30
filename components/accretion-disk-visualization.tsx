@@ -245,31 +245,23 @@ export default function AccretionDiskVisualization() {
         // Normalized radius for gradients
         float rNorm = (r - DISK_INNER) / (DISK_OUTER - DISK_INNER);
         
-        // Dynamic turbulence using smooth sine-based function
-        vec2 diskUV = vec2(phase * 2.0, r * 0.8);
+        // Smooth flowing turbulence everywhere - main source of detail
+        float turb = smoothTurb(vec2(phase * 3.0, r * 1.2), u_time * 2.0);
+        float turb2 = smoothTurb(vec2(phase * 2.0 + 1.5, r * 0.7 + 2.0), u_time * 2.5);
+        float turbulence = (turb + turb2) * 0.5;
         
-        // Smooth flowing turbulence - no grid artifacts
-        float turb = smoothTurb(diskUV, u_time * 1.5) * 0.8;
-        float turb2 = smoothTurb(diskUV * 1.5 + vec2(3.14, 1.57), u_time * 2.0) * 0.4;
-        turb = turb + turb2 - 0.6;
+        // Smooth animated brightness waves instead of static spirals
+        float wave1 = sin(phase * 2.0 + r * 0.5 - u_time * 3.0 + turbulence * 2.0) * 0.5 + 0.5;
+        float wave2 = sin(phase * 3.0 - r * 0.8 + u_time * 2.5 + turb * 3.0) * 0.5 + 0.5;
+        float waves = wave1 * 0.4 + wave2 * 0.3;
         
-        // Prominent spiral arms that rotate rapidly with the disk
-        float spiralPhase = phase * 2.5 + r * 2.8;
-        float spiralArm = sin(spiralPhase);
-        spiralArm = spiralArm * 0.5 + 0.5;
-        spiralArm = pow(spiralArm, 1.2) * 0.6;
+        // Flowing bright clumps - position modulated by turbulence
+        float clumpX = sin(angle * 4.0 - u_time * 2.0 + turb2 * 4.0);
+        float clumpY = cos(r * 2.0 + u_time * 1.5 + turb * 3.0);
+        float hotspot = pow(max(0.0, clumpX * clumpY), 3.0) * 0.4;
         
-        // Secondary spiral structure - faster
-        float spiral2 = sin(phase * 5.0 - r * 2.0 + u_time * 1.5);
-        spiral2 = max(0.0, spiral2) * 0.35;
-        
-        // Bright clumps and hotspots that orbit rapidly
-        float clumpPhase = angle - u_time * 3.5 / sqrt(r);
-        float hotspot = sin(clumpPhase * 8.0 + r * 4.0) * 0.5 + 0.5;
-        hotspot = pow(hotspot, 5.0) * 0.5;
-        
-        // Strong flickering brightness variation
-        float flicker = sin(u_time * 6.0 + r * 8.0) * 0.15 + 1.0;
+        // Global pulsing
+        float flicker = sin(u_time * 4.0 + r * 3.0 + turbulence * 5.0) * 0.12 + 1.0;
         
         // Radial brightness profile - hotter inner edge
         float brightness = pow(DISK_INNER / r, 1.8);
@@ -293,10 +285,10 @@ export default function AccretionDiskVisualization() {
         doppler = doppler * doppler * doppler;
         
         float intensity = brightness * innerFade * outerFade * doppler * flicker;
-        intensity = intensity * (0.6 + turb + spiralArm + spiral2 + hotspot);
+        intensity = intensity * (0.5 + turbulence * 0.6 + waves + hotspot);
         
         // Color shifts with temperature/activity
-        float tempVar = hotspot + turb * 0.3;
+        float tempVar = hotspot + turbulence * 0.4;
         
         return vec4(diskColor(r, tempVar) * intensity * 3.5, 1.0);
       }
