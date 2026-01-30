@@ -193,36 +193,20 @@ export default function AccretionDiskVisualization() {
         return fract((p3.x + p3.y) * p3.z);
       }
       
-      float noise(vec2 p) {
-        vec2 i = floor(p);
-        vec2 f = fract(p);
-        // Quintic interpolation for smoother results
-        vec2 u = f * f * f * (f * (f * 6.0 - 15.0) + 10.0);
-        
-        float n00 = hash(i);
-        float n10 = hash(i + vec2(1.0, 0.0));
-        float n01 = hash(i + vec2(0.0, 1.0));
-        float n11 = hash(i + vec2(1.0, 1.0));
-        
-        float nx0 = n00 + (n10 - n00) * u.x;
-        float nx1 = n01 + (n11 - n01) * u.x;
-        return nx0 + (nx1 - nx0) * u.y;
-      }
-      
-      float fbm(vec2 p, float timeOffset) {
-        float f = 0.0;
-        float amp = 0.55;
-        float freq = 1.0;
-        
-        // Add time-based animation to each octave
-        for (int i = 0; i < 3; i++) {
-          vec2 animP = p * freq + vec2(timeOffset * (0.3 + float(i) * 0.15), timeOffset * (0.2 + float(i) * 0.1));
-          f = f + amp * noise(animP);
-          freq = freq * 1.9;
-          amp = amp * 0.5;
-        }
-        
-        return f;
+      // Smooth turbulence using only sine waves - no grid artifacts
+      float smoothTurb(vec2 p, float t) {
+        float v = 0.0;
+        // Layer 1 - large scale swirls
+        v = v + sin(p.x * 1.2 + t * 0.7) * cos(p.y * 0.9 - t * 0.5) * 0.5;
+        // Layer 2 - medium detail
+        v = v + sin(p.x * 2.3 - t * 1.1 + p.y * 1.8) * 0.3;
+        v = v + cos(p.y * 2.7 + t * 0.9 - p.x * 0.6) * 0.25;
+        // Layer 3 - fine detail flowing
+        v = v + sin(p.x * 4.1 + p.y * 3.2 + t * 1.5) * 0.15;
+        v = v + cos(p.x * 3.5 - p.y * 4.0 - t * 1.3) * 0.12;
+        // Layer 4 - very fine shimmer
+        v = v + sin(p.x * 6.0 + t * 2.0) * cos(p.y * 5.5 - t * 1.8) * 0.08;
+        return v * 0.5 + 0.5;
       }
       
       vec3 diskColor(float r, float temp) {
@@ -261,16 +245,13 @@ export default function AccretionDiskVisualization() {
         // Normalized radius for gradients
         float rNorm = (r - DISK_INNER) / (DISK_OUTER - DISK_INNER);
         
-        // Dynamic turbulence UV - flows rapidly with rotation
-        vec2 diskUV = vec2(
-          phase * 1.5 + u_time * 1.2,
-          log(r + 0.5) * 3.0 - u_time * 0.6
-        );
+        // Dynamic turbulence using smooth sine-based function
+        vec2 diskUV = vec2(phase * 2.0, r * 0.8);
         
-        // Animated turbulence - time flows through the noise itself
-        float turb = fbm(diskUV, u_time * 0.8) * 0.9;
-        float turb2 = fbm(diskUV * 0.6, u_time * 1.2) * 0.5;
-        turb = turb + turb2;
+        // Smooth flowing turbulence - no grid artifacts
+        float turb = smoothTurb(diskUV, u_time * 1.5) * 0.8;
+        float turb2 = smoothTurb(diskUV * 1.5 + vec2(3.14, 1.57), u_time * 2.0) * 0.4;
+        turb = turb + turb2 - 0.6;
         
         // Prominent spiral arms that rotate rapidly with the disk
         float spiralPhase = phase * 2.5 + r * 2.8;
