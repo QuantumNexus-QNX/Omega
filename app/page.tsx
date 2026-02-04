@@ -23,31 +23,31 @@ export default function Home() {
         
         {/* Subtitle positioned at ~28% from top - just above the disk's upper glow */}
         <div className="absolute top-[22%] md:top-[24%] left-0 right-0 text-center">
-          <p className="text-xs sm:text-sm md:text-base font-light tracking-[0.45em] uppercase text-sky-300/80 drop-shadow-[0_0_15px_rgba(125,211,252,0.5)]">
+          <p className="text-xs sm:text-sm md:text-base font-normal tracking-[0.45em] uppercase text-[#7CB9E8] drop-shadow-[0_0_20px_rgba(124,185,232,0.6)]">
             The Event Horizon
           </p>
         </div>
         
         {/* Bottom section - Enter CTA positioned low in dark zone below disk */}
         <div className="absolute bottom-[8%] md:bottom-[10%] left-0 right-0 flex flex-col items-center gap-4">
-          {/* Enter text link */}
+          {/* Enter text link - bolder blue */}
           <Link 
             href="#enter"
-            className="group relative text-sm md:text-base font-light tracking-[0.5em] uppercase text-sky-300/90 hover:text-sky-100 transition-all duration-500"
+            className="group relative text-base md:text-lg font-normal tracking-[0.5em] uppercase text-[#5DADE2] hover:text-[#85C1E9] transition-all duration-500"
           >
             <span className="relative z-10">Enter</span>
             {/* Animated underline on hover */}
-            <span className="absolute -bottom-1 left-0 w-0 h-px bg-sky-300/60 group-hover:w-full transition-all duration-500" />
+            <span className="absolute -bottom-1 left-0 w-0 h-px bg-[#5DADE2] group-hover:w-full transition-all duration-500" />
           </Link>
           
           {/* Down arrow indicator */}
           <svg 
-            className="w-4 h-4 text-sky-300/50"
+            className="w-4 h-4 text-[#5DADE2]/60"
             fill="none" 
             stroke="currentColor" 
             viewBox="0 0 24 24"
           >
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M19 14l-7 7m0 0l-7-7" />
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 14l-7 7m0 0l-7-7" />
           </svg>
         </div>
       </div>
