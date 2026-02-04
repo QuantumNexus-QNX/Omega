@@ -181,7 +181,10 @@ export default function AccretionDiskVisualization() {
       
       const float PI = 3.14159265359;
       const float RS = 0.6;
-      const float DISK_INNER = 1.2;
+      const float M = RS * 0.5; // Mass parameter (Rs = 2M)
+      const float CRITICAL_B = 3.0 * sqrt(3.0) * M; // Critical impact parameter
+      const float ISCO = 6.0 * M; // Innermost stable circular orbit
+      const float DISK_INNER = ISCO * 1.05; // Disk starts just outside ISCO
       const float DISK_OUTER = 6.0;
       const int MAX_STEPS = ${quality.maxSteps};
       const float INCLINATION = 0.1045;
@@ -210,23 +213,33 @@ export default function AccretionDiskVisualization() {
       }
       
       vec3 diskColor(float r, float temp) {
-        float t = clamp((r - DISK_INNER) / (DISK_OUTER - DISK_INNER), 0.0, 1.0);
+        // Temperature profile: T(r) ∝ r^(-3/4) (standard thin disk)
+        float tempProfile = pow(DISK_INNER / max(r, DISK_INNER), 0.75);
+        float t = 1.0 - tempProfile; // 0 = hot (inner), 1 = cool (outer)
+        t = clamp(t, 0.0, 1.0);
         
-        vec3 hot = vec3(1.4, 1.4, 1.3);
-        vec3 warm = vec3(1.3, 1.0, 0.5);
-        vec3 mid = vec3(1.2, 0.65, 0.2);
-        vec3 cool = vec3(0.9, 0.3, 0.1);
+        // Color palette: white → pale yellow → gold → orange → amber → red-brown
+        vec3 white = vec3(1.5, 1.5, 1.45);
+        vec3 paleYellow = vec3(1.4, 1.35, 1.0);
+        vec3 gold = vec3(1.3, 1.0, 0.5);
+        vec3 orange = vec3(1.2, 0.65, 0.2);
+        vec3 amber = vec3(1.0, 0.45, 0.12);
+        vec3 redBrown = vec3(0.7, 0.25, 0.08);
         
         vec3 c;
-        if (t < 0.33) {
-          c = mix(hot, warm, t * 3.0);
-        } else if (t < 0.66) {
-          c = mix(warm, mid, (t - 0.33) * 3.0);
+        if (t < 0.2) {
+          c = mix(white, paleYellow, t * 5.0);
+        } else if (t < 0.4) {
+          c = mix(paleYellow, gold, (t - 0.2) * 5.0);
+        } else if (t < 0.6) {
+          c = mix(gold, orange, (t - 0.4) * 5.0);
+        } else if (t < 0.8) {
+          c = mix(orange, amber, (t - 0.6) * 5.0);
         } else {
-          c = mix(mid, cool, (t - 0.66) * 3.0);
+          c = mix(amber, redBrown, (t - 0.8) * 5.0);
         }
         
-        return c + vec3(0.3, 0.2, 0.1) * temp;
+        return c + vec3(0.25, 0.15, 0.05) * temp;
       }
       
       // Volumetric disk sampling - samples density at any 3D point
@@ -251,49 +264,61 @@ export default function AccretionDiskVisualization() {
         // Time-based animation - everything flows
         float t = u_time;
         
-        // Orbital motion - inner regions move MUCH faster (Keplerian)
-        // Increased base speed for more visible rotation
-        float orbitalSpeed = 15.0 / (r * sqrt(r));
+        // Orbital motion - inner regions move faster
+        float orbitalSpeed = 8.0 / (r * sqrt(r));
         float orbitalPhase = t * orbitalSpeed;
         
         // Create flowing coordinates that animate smoothly
         float flowX = pos.x * cos(orbitalPhase) - pos.z * sin(orbitalPhase);
         float flowZ = pos.x * sin(orbitalPhase) + pos.z * cos(orbitalPhase);
         
-        // Motion streaks - elongated in direction of rotation
-        float angle = atan(pos.z, pos.x);
-        float streakPhase = angle * 6.0 - t * orbitalSpeed * 0.5;
-        float motionStreak = sin(streakPhase) * 0.5 + 0.5;
-        motionStreak = pow(motionStreak, 0.7) * 0.3;
-        
         // Multiple layers of smooth turbulence at different scales
-        float turb1 = smoothTurb(vec2(flowX * 0.8, flowZ * 0.8), t * 2.5);
-        float turb2 = smoothTurb(vec2(flowX * 1.5 + 5.0, flowZ * 1.2 + 3.0), t * 3.5);
-        float turb3 = smoothTurb(vec2(flowX * 0.4, flowZ * 0.5), t * 1.5);
+        float turb1 = smoothTurb(vec2(flowX * 0.8, flowZ * 0.8), t * 1.5);
+        float turb2 = smoothTurb(vec2(flowX * 1.5 + 5.0, flowZ * 1.2 + 3.0), t * 2.0);
+        float turb3 = smoothTurb(vec2(flowX * 0.4, flowZ * 0.5), t * 0.8);
         float turbulence = turb1 * 0.5 + turb2 * 0.3 + turb3 * 0.2;
         
-        // Fast flowing brightness variations - more dynamic
-        float flow1 = sin(flowX * 2.0 + flowZ * 1.2 + t * 4.0) * 0.5 + 0.5;
-        float flow2 = cos(flowX * 1.3 - flowZ * 1.8 - t * 3.0) * 0.5 + 0.5;
-        float flow3 = sin(angle * 3.0 - t * orbitalSpeed * 0.3) * 0.5 + 0.5;
-        float flowBright = flow1 * 0.3 + flow2 * 0.25 + flow3 * 0.2 + motionStreak + 0.25;
+        // Flowing brightness variations
+        float flow1 = sin(flowX * 1.5 + flowZ * 0.8 + t * 2.0) * 0.5 + 0.5;
+        float flow2 = cos(flowX * 0.9 - flowZ * 1.2 - t * 1.5) * 0.5 + 0.5;
+        float flowBright = flow1 * 0.4 + flow2 * 0.3 + 0.3;
+        
+        // === SPIRAL DENSITY WAVES (very subtle, m=2 mode) ===
+        // S(r,φ,t) = 1 + A*cos(m*φ - ωt + k*ln(r))
+        float angle = atan(pos.z, pos.x);
+        float spiralPhase = 2.0 * angle - t * 0.8 + 2.5 * log(max(r, 0.1));
+        float spiralWave = 1.0 + 0.06 * cos(spiralPhase);
+        flowBright = flowBright * spiralWave;
         
         // Radial brightness - hotter near center
         float radialBright = pow(DISK_INNER / max(r, DISK_INNER), 1.5);
         
-        // Doppler effect for approaching/receding sides
-        float vOrb = 0.5 / sqrt(max(r, 0.1));
+        // === PROPER RELATIVISTIC DOPPLER FROM SCHWARZSCHILD PHYSICS ===
+        
+        // Orbital velocity: v = sqrt(M/ρ) in geometric units, clamp < 0.7c for stability
+        float vOrb = min(sqrt(RS * 0.5 / max(r, DISK_INNER)), 0.7);
+        
+        // Tangential velocity direction (Keplerian orbit)
         float orbitDirX = -pos.z / max(r, 0.001);
         float orbitDirZ = pos.x / max(r, 0.001);
+        
+        // Line of sight direction (from emitter to camera)
         float velLen = sqrt(vel.x * vel.x + vel.y * vel.y + vel.z * vel.z);
-        float dopplerDot = (orbitDirX * vel.x + orbitDirZ * vel.z) / max(velLen, 0.001);
+        float losX = -vel.x / max(velLen, 0.001);
+        float losZ = -vel.z / max(velLen, 0.001);
         
-        // Doppler factor: positive = approaching (blueshift), negative = receding (redshift)
-        float dopplerFactor = dopplerDot * vOrb * 2.5;
+        // cos(θ) = velocity · line_of_sight
+        float cosTheta = orbitDirX * losX + orbitDirZ * losZ;
         
-        // Brightness boost for approaching material (relativistic beaming)
-        float dopplerBright = clamp(1.0 + dopplerFactor, 0.25, 3.0);
-        dopplerBright = dopplerBright * dopplerBright;
+        // Lorentz factor: γ = 1/sqrt(1 - v²)
+        float gamma = 1.0 / sqrt(max(1.0 - vOrb * vOrb, 0.01));
+        
+        // Relativistic Doppler factor: δ = 1 / [γ(1 - v·cos(θ))]
+        float delta = 1.0 / max(gamma * (1.0 - vOrb * cosTheta), 0.1);
+        
+        // Intensity scales as δ³ (relativistic beaming)
+        float dopplerBright = delta * delta * delta;
+        dopplerBright = clamp(dopplerBright, 0.15, 6.0);
         
         // Combine all factors
         float density = verticalDensity * radialDensity;
@@ -301,37 +326,36 @@ export default function AccretionDiskVisualization() {
         
         // Color based on radius and turbulence
         float tempVar = turbulence * 0.5;
-        vec3 col = diskColor(r, tempVar) * brightness * 4.0;
+        vec3 col = diskColor(r, tempVar) * brightness * 3.5;
         
-        // Apply relativistic color shift
-        // Blueshift: approaching material appears hotter (shift toward blue/white)
-        // Redshift: receding material appears cooler (shift toward red/orange)
-        float colorShift = clamp(dopplerFactor * 2.0, -1.0, 1.0);
+        // === RELATIVISTIC COLOR SHIFT ===
+        // δ > 1 = approaching (blueshift), δ < 1 = receding (redshift)
+        float colorShift = clamp((delta - 1.0) * 1.5, -1.0, 1.0);
         
-        // Blueshift - strong shift toward blue/cyan/white for approaching material
+        // Blueshift - shift toward blue/cyan/white
         if (colorShift > 0.0) {
-          float blueBoost = colorShift * colorShift; // Quadratic for stronger effect
-          col.b = col.b + col.b * blueBoost * 2.0 + colorShift * 0.4;
-          col.g = col.g + col.g * colorShift * 1.2;
-          col.r = col.r * (1.0 - colorShift * 0.15); // Slightly reduce red
-          col = col * (1.0 + colorShift * 0.5); // Brighter overall
+          float blueBoost = colorShift * colorShift;
+          col.b = col.b * (1.0 + blueBoost * 3.0) + colorShift * 0.5;
+          col.g = col.g * (1.0 + colorShift * 1.5);
+          col.r = col.r * (1.0 - colorShift * 0.2);
         }
-        // Redshift - boost red, reduce blue significantly
+        // Redshift - shift toward red/orange
         else {
           float redShift = -colorShift;
-          col.r = col.r + col.r * redShift * 0.6;
-          col.g = col.g * (1.0 - redShift * 0.35);
-          col.b = col.b * (1.0 - redShift * 0.7);
+          col.r = col.r * (1.0 + redShift * 0.8);
+          col.g = col.g * (1.0 - redShift * 0.4);
+          col.b = col.b * (1.0 - redShift * 0.8);
         }
         
-        // Gravitational redshift - light loses energy escaping the gravity well
-        // Stronger effect closer to the black hole (Schwarzschild factor)
-        float gravRedshift = sqrt(1.0 - RS / max(r, RS * 1.01));
+        // === GRAVITATIONAL REDSHIFT (Schwarzschild) ===
+        // g(ρ) = sqrt(1 - 2M/ρ) = sqrt(1 - Rs/ρ)
+        float gravRedshift = sqrt(max(1.0 - RS / max(r, RS * 1.01), 0.01));
         col = col * gravRedshift;
-        // Shift color toward red for inner disk regions
-        float gravColorShift = (1.0 - gravRedshift) * 2.0;
-        col.b = col.b * (1.0 - gravColorShift * 0.4);
-        col.g = col.g * (1.0 - gravColorShift * 0.15);
+        
+        // Additional color shift from gravitational redshift
+        float gravColorShift = (1.0 - gravRedshift) * 3.0;
+        col.b = col.b * (1.0 - gravColorShift * 0.5);
+        col.g = col.g * (1.0 - gravColorShift * 0.2);
         
         return vec4(col, density);
       }
@@ -485,10 +509,29 @@ export default function AccretionDiskVisualization() {
               : ""
           }
           
-          float prDist = abs(r - RS * 1.5);
-          float prPulse = 0.7 + 0.3 * sin(u_time * 4.0 + atan(posZ, posX) * 4.0);
-          float prGlow = exp(-prDist * prDist * 100.0) * 0.25 * prPulse * (1.0 - alpha);
-          color = color + vec3(1.0, 0.9, 0.7) * prGlow;
+          // === PHOTON RING at critical impact parameter b_c = 3√3 M ===
+          // Primary photon ring - thin, sharp, hotter than disk
+          float prDist = abs(r - CRITICAL_B);
+          float primaryRing = exp(-prDist * prDist * 200.0);
+          
+          // Secondary photon ring (light that orbited once more)
+          float pr2Dist = abs(r - CRITICAL_B * 0.95);
+          float secondaryRing = exp(-pr2Dist * pr2Dist * 400.0) * 0.4;
+          
+          // === PORTAL MOMENT - slow breathing cycle for photon ring ===
+          // Creates a subtle "alive" feeling - the event horizon breathes
+          float portalCycle = sin(u_time * 0.4) * 0.5 + 0.5; // Slow 15s cycle
+          float portalIntensity = 0.85 + 0.25 * portalCycle; // 0.85 to 1.1 intensity
+          
+          // Subtle lensing shimmer (spacetime breathing)
+          float shimmer = 1.0 + 0.025 * sin(u_time * 2.5 + r * 6.0);
+          
+          float prPulse = 0.7 + 0.3 * sin(u_time * 3.0 + atan(posZ, posX) * 3.0);
+          float prGlow = (primaryRing + secondaryRing) * 0.4 * prPulse * shimmer * portalIntensity * (1.0 - alpha);
+          
+          // Photon ring with subtle blue-white tint during portal peaks
+          vec3 ringColor = mix(vec3(1.15, 1.05, 0.95), vec3(1.1, 1.15, 1.25), portalCycle * 0.3);
+          color = color + ringColor * prGlow;
           
           posX = newPosX;
           posY = newPosY;
@@ -497,16 +540,46 @@ export default function AccretionDiskVisualization() {
           if (alpha > 0.95) break;
         }
         
+        // === EINSTEIN RING and SECONDARY LENSED ARCS ===
         float rayClosest = -camX * rdX - camY * rdY - camZ * rdZ;
         if (rayClosest > 0.0) {
           float cpX = camX + rdX * rayClosest;
           float cpY = camY + rdY * rayClosest;
           float cpZ = camZ + rdZ * rayClosest;
           float closestR = sqrt(cpX * cpX + cpY * cpY + cpZ * cpZ);
+          
+          // Portal moment sync for arcs
+          float arcPortal = sin(u_time * 0.4) * 0.5 + 0.5;
+          float arcIntensity = 0.8 + 0.3 * arcPortal;
+          
+          // Einstein ring at ~2.6 Rs
           float erDist = closestR - RS * 2.6;
-          float einsteinRing = exp(-erDist * erDist * 70.0);
-          color = color + vec3(1.0, 0.8, 0.5) * einsteinRing * 0.4 * (1.0 - alpha * 0.7);
+          float einsteinRing = exp(-erDist * erDist * 80.0);
+          color = color + vec3(1.0, 0.88, 0.65) * einsteinRing * 0.35 * arcIntensity * (1.0 - alpha * 0.7);
+          
+          // Secondary lensed arc (underside of disk bent upward)
+          // Faint mirror arc above/below disk - appears during portal peaks
+          float secondaryArcDist = abs(closestR - RS * 3.5);
+          float secondaryArc = exp(-secondaryArcDist * secondaryArcDist * 45.0) * 0.25 * arcIntensity;
+          
+          // Upper arc (above disk plane)
+          float upperArcY = cpY;
+          float upperWeight = smoothstep(-0.5, 0.5, upperArcY) * 0.6;
+          
+          // Lower arc (below disk plane)
+          float lowerWeight = smoothstep(0.5, -0.5, upperArcY) * 0.6;
+          
+          // Combined arc with warm disk-like color
+          vec3 arcColor = vec3(1.05, 0.72, 0.38) * secondaryArc * (upperWeight + lowerWeight) * (1.0 - alpha * 0.8);
+          color = color + arcColor;
         }
+        
+        // === ISCO GAP indicator - subtle dark ring between photon sphere and disk ===
+        float screenR = length(uv);
+        float iscoScreenR = 0.08; // Approximate screen position of ISCO
+        float gapDist = abs(screenR - iscoScreenR);
+        float iscoGap = 1.0 - exp(-gapDist * gapDist * 800.0) * 0.15;
+        color = color * iscoGap;
         
         ${
           quality.bloomEnabled
