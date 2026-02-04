@@ -1,5 +1,5 @@
 import AccretionDiskVisualization from "@/components/accretion-disk-visualization"
-import { Button } from "@/components/ui/button"
+import Link from "next/link"
 
 export default function Home() {
   return (
@@ -9,55 +9,39 @@ export default function Home() {
         <AccretionDiskVisualization />
       </div>
 
-      {/* Dark gradient overlay for text readability */}
-      <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/30 to-black/70" />
+      {/* Subtle vignette overlay */}
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_transparent_40%,_rgba(0,0,0,0.5)_100%)]" />
 
       {/* Content */}
       <div className="relative z-10 flex flex-col h-full">
-        {/* Header */}
-        <header className="px-6 py-6 md:px-12 md:py-8">
-          <div className="flex items-center justify-between max-w-7xl mx-auto">
-            <h1 className="text-2xl md:text-3xl font-bold text-white tracking-tight">AEO Trivector</h1>
-            <Button
-              variant="outline"
-              className="bg-white/10 text-white border-white/20 hover:bg-white/20 backdrop-blur-sm"
-            >
-              Contact
-            </Button>
-          </div>
-        </header>
-
-        {/* Hero Content */}
-        <div className="flex-1 flex items-center justify-center px-6 md:px-12">
-          <div className="max-w-5xl mx-auto text-center">
-            <h2 className="text-4xl md:text-6xl lg:text-7xl font-bold text-white mb-6 leading-tight text-balance">
-              AEO Trivector
-            </h2>
-            <p className="text-lg md:text-xl text-white/90 max-w-2xl mx-auto mb-10 leading-relaxed">
-              Pioneering advanced computational physics and real-time gravitational lensing simulations with
-              photorealistic accuracy
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-              <Button size="lg" className="bg-white text-black hover:bg-white/90 text-base px-8 h-12">
-                Get Started
-              </Button>
-              <Button
-                size="lg"
-                variant="outline"
-                className="bg-white/10 text-white border-white/30 hover:bg-white/20 backdrop-blur-sm text-base px-8 h-12"
-              >
-                Learn More
-              </Button>
-            </div>
-          </div>
+        {/* Top section - Title positioned high in the dark zone above the disk */}
+        <div className="pt-6 md:pt-8 lg:pt-10 text-center">
+          <h1 className="font-serif text-5xl sm:text-6xl md:text-7xl lg:text-8xl xl:text-9xl font-light text-amber-200/90 tracking-[0.2em] uppercase px-4">
+            AEO Trivector
+          </h1>
         </div>
-
-        {/* Footer */}
-        <footer className="px-6 py-6 md:px-12 md:py-8">
-          <div className="max-w-7xl mx-auto text-center text-white/60 text-sm">
-            <p>© 2025 AEO Trivector LLC. All rights reserved.</p>
-          </div>
-        </footer>
+        
+        {/* Enter CTA positioned in center over black hole - around 58-62% from top */}
+        <div className="absolute top-[58%] md:top-[60%] left-0 right-0 flex flex-col items-center gap-3">
+          {/* Enter text link - larger, prominent */}
+          <Link 
+            href="#enter"
+            className="group relative text-lg sm:text-xl md:text-2xl font-normal tracking-[0.5em] uppercase text-[#5DADE2] hover:text-[#85C1E9] transition-all duration-500"
+          >
+            Enter
+          </Link>
+          
+          {/* Down arrow indicator - thin line */}
+          <svg 
+            className="w-3 h-6 md:w-4 md:h-8 text-[#5DADE2]/70 mt-1"
+            fill="none" 
+            stroke="currentColor" 
+            viewBox="0 0 24 48"
+            strokeWidth={1}
+          >
+            <path strokeLinecap="round" strokeLinejoin="round" d="M12 0v44m0 0l-6-6m6 6l6-6" />
+          </svg>
+        </div>
       </div>
     </main>
   )

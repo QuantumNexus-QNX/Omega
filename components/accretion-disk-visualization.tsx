@@ -251,24 +251,32 @@ export default function AccretionDiskVisualization() {
         // Time-based animation - everything flows
         float t = u_time;
         
-        // Orbital motion - inner regions move faster
-        float orbitalSpeed = 8.0 / (r * sqrt(r));
+        // Orbital motion - inner regions move MUCH faster (Keplerian)
+        // Increased base speed for more visible rotation
+        float orbitalSpeed = 15.0 / (r * sqrt(r));
         float orbitalPhase = t * orbitalSpeed;
         
         // Create flowing coordinates that animate smoothly
         float flowX = pos.x * cos(orbitalPhase) - pos.z * sin(orbitalPhase);
         float flowZ = pos.x * sin(orbitalPhase) + pos.z * cos(orbitalPhase);
         
+        // Motion streaks - elongated in direction of rotation
+        float angle = atan(pos.z, pos.x);
+        float streakPhase = angle * 6.0 - t * orbitalSpeed * 0.5;
+        float motionStreak = sin(streakPhase) * 0.5 + 0.5;
+        motionStreak = pow(motionStreak, 0.7) * 0.3;
+        
         // Multiple layers of smooth turbulence at different scales
-        float turb1 = smoothTurb(vec2(flowX * 0.8, flowZ * 0.8), t * 1.5);
-        float turb2 = smoothTurb(vec2(flowX * 1.5 + 5.0, flowZ * 1.2 + 3.0), t * 2.0);
-        float turb3 = smoothTurb(vec2(flowX * 0.4, flowZ * 0.5), t * 0.8);
+        float turb1 = smoothTurb(vec2(flowX * 0.8, flowZ * 0.8), t * 2.5);
+        float turb2 = smoothTurb(vec2(flowX * 1.5 + 5.0, flowZ * 1.2 + 3.0), t * 3.5);
+        float turb3 = smoothTurb(vec2(flowX * 0.4, flowZ * 0.5), t * 1.5);
         float turbulence = turb1 * 0.5 + turb2 * 0.3 + turb3 * 0.2;
         
-        // Flowing brightness variations
-        float flow1 = sin(flowX * 1.5 + flowZ * 0.8 + t * 2.0) * 0.5 + 0.5;
-        float flow2 = cos(flowX * 0.9 - flowZ * 1.2 - t * 1.5) * 0.5 + 0.5;
-        float flowBright = flow1 * 0.4 + flow2 * 0.3 + 0.3;
+        // Fast flowing brightness variations - more dynamic
+        float flow1 = sin(flowX * 2.0 + flowZ * 1.2 + t * 4.0) * 0.5 + 0.5;
+        float flow2 = cos(flowX * 1.3 - flowZ * 1.8 - t * 3.0) * 0.5 + 0.5;
+        float flow3 = sin(angle * 3.0 - t * orbitalSpeed * 0.3) * 0.5 + 0.5;
+        float flowBright = flow1 * 0.3 + flow2 * 0.25 + flow3 * 0.2 + motionStreak + 0.25;
         
         // Radial brightness - hotter near center
         float radialBright = pow(DISK_INNER / max(r, DISK_INNER), 1.5);
@@ -298,20 +306,22 @@ export default function AccretionDiskVisualization() {
         // Apply relativistic color shift
         // Blueshift: approaching material appears hotter (shift toward blue/white)
         // Redshift: receding material appears cooler (shift toward red/orange)
-        float colorShift = clamp(dopplerFactor * 1.5, -1.0, 1.0);
+        float colorShift = clamp(dopplerFactor * 2.0, -1.0, 1.0);
         
-        // Blueshift - boost blue and green, reduce red slightly
+        // Blueshift - strong shift toward blue/cyan/white for approaching material
         if (colorShift > 0.0) {
-          col.b = col.b + col.b * colorShift * 0.8;
-          col.g = col.g + col.g * colorShift * 0.4;
-          col = col * (1.0 + colorShift * 0.3);
+          float blueBoost = colorShift * colorShift; // Quadratic for stronger effect
+          col.b = col.b + col.b * blueBoost * 2.0 + colorShift * 0.4;
+          col.g = col.g + col.g * colorShift * 1.2;
+          col.r = col.r * (1.0 - colorShift * 0.15); // Slightly reduce red
+          col = col * (1.0 + colorShift * 0.5); // Brighter overall
         }
         // Redshift - boost red, reduce blue significantly
         else {
           float redShift = -colorShift;
-          col.r = col.r + col.r * redShift * 0.5;
-          col.g = col.g * (1.0 - redShift * 0.3);
-          col.b = col.b * (1.0 - redShift * 0.6);
+          col.r = col.r + col.r * redShift * 0.6;
+          col.g = col.g * (1.0 - redShift * 0.35);
+          col.b = col.b * (1.0 - redShift * 0.7);
         }
         
         // Gravitational redshift - light loses energy escaping the gravity well
