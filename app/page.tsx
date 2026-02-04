@@ -21,8 +21,8 @@ export default function Home() {
           </h1>
         </div>
         
-        {/* Subtitle positioned closer to title - around 17-18% from top */}
-        <div className="absolute top-[16%] md:top-[17%] lg:top-[18%] left-0 right-0 text-center">
+        {/* Subtitle positioned at ~22-24% from top - just above disk glow */}
+        <div className="absolute top-[21%] md:top-[22%] lg:top-[23%] left-0 right-0 text-center">
           <p className="text-[10px] sm:text-xs md:text-sm font-normal tracking-[0.4em] uppercase text-[#7CB9E8]">
             The Event Horizon
           </p>
